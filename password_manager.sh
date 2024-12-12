@@ -71,15 +71,16 @@ get_password()
 
     matched_data=$(grep "^$search_name" user_inputs)
     if [ $? -eq 0 ]; then
-        echo "$matched_data" | awk -F ':' '{print "\nサービス名:"$1 "\nユーザー名:"$2 "\nパスワード:"$3}'
+        echo "$matched_data" | awk -F ':' '{print "サービス名:"$1 "\nユーザー名:"$2 "\nパスワード:"$3"\n"}'
     else
-        echo -e '\nそのサービス名は登録されていません。'
+        echo -e 'そのサービスは登録されていません。\n'
     fi
 }
 
 echo 'パスワードマネージャーへようこそ！'
 while true; do
     read -p '次の選択肢から入力してください(Add Password/Get Password/Exit):' menu
+    echo ''
     case $menu in
     # TODO: 手動テスト簡略化の為、一時的にパターンを省略
         'a')
