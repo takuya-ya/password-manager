@@ -45,7 +45,7 @@ add_password()
 
     read -p 'サービス名を入力して下さい：' user_inputs['service_name']
     read -p 'ユーザー名を入力して下さい：' user_inputs['user_name']
-    read -p 'パスワードを入力して下さい：' user_inputs['password']
+    read -s -p 'パスワードを入力して下さい：' user_inputs['password']
     echo ''
 
     validation_user_inputs
