@@ -24,18 +24,28 @@ validation_user_inputs()
     done
 }
 
+encrypt_remove_file()
+{
+        gpg --symmetric --yes --output user_inputs.gpg user_inputs
+        rm user_inputs
+}
+
 save_user_inputs()
 {
+    # TODO:複合化
+    # gpg -d --yes --output user_inputs user_inputs.gpg
     (
         echo "${user_inputs['service_name']}":"${user_inputs['user_name']}":"${user_inputs['password']}" >> user_inputs
     ) 2>> error.txt
 
     if [ $? -ne 0 ]; then
         echo   '入力内容の保存に失敗しました。'
+        encrypt_remove_file
         return
     fi
 
     echo 'パスワードの追加は成功しました。'
+    encrypt_remove_file
 }
 
 add_password()
