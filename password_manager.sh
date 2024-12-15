@@ -40,7 +40,6 @@ save_user_inputs()
 
     if [ $? -ne 0 ]; then
         echo   '入力内容の保存に失敗しました。'
-        encrypt_remove_file
         return
     fi
 
