@@ -26,14 +26,15 @@ validation_user_inputs()
 
 encrypt_remove_file()
 {
+        # TODO:ターミナルへの出力捨てる
         gpg --symmetric --yes --output user_inputs.gpg user_inputs
         rm user_inputs
 }
 
 save_user_inputs()
 {
-    # TODO:複合化
-    # gpg -d --yes --output user_inputs user_inputs.gpg
+    # TODO:初回のみ、エラーが出るのでファイルを作成
+        gpg -d --yes --output user_inputs user_inputs.gpg
     (
         echo "${user_inputs['service_name']}":"${user_inputs['user_name']}":"${user_inputs['password']}" >> user_inputs
     ) 2>> error.txt
