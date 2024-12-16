@@ -1,28 +1,6 @@
 #!/bin/bash
 
 # 未入力項目と文字数超過を確認し、該当するエラーメッセージを配列に追加
-validation_user_inputs()
-{
-    local -A input_errors=(
-        ['service_name']='サービス名が入力されていません。'
-        ['user_name']='ユーザー名が入力されていません。'
-        ['password']='パスワードが入力されていません。'
-    )
-    local -A length_errors=(
-        ['service_name']='サービス名は50文字以内で入力してください。'
-        ['user_name']='ユーザー名は50文字以内で入力してください。'
-        ['password']='パスワードは50文字以内で入力してください。'
-    )
-    MAX_CAHRACTERS=50
-    # user_inputsのインデントをindentとしてループし、ユーザー入力情報とエラー文を紐づける
-    for indent in "${!user_inputs[@]}"; do
-        if [ -z "${user_inputs[$indent]}" ]; then
-            error_messages+=("${input_errors[$indent]}")
-        elif [ "${#user_inputs[$indent]}" -ge "$MAX_CAHRACTERS" ]; then
-            error_messages+=("${length_errors[$indent]}")
-        fi
-    done
-}
 
 encrypt_remove_file()
 {
@@ -55,6 +33,29 @@ save_user_inputs()
     echo 'パスワードの追加は成功しました。'
 }
 
+validation_user_inputs()
+{
+    local -A input_errors=(
+        ['service_name']='サービス名が入力されていません。'
+        ['user_name']='ユーザー名が入力されていません。'
+        ['password']='パスワードが入力されていません。'
+    )
+    local -A length_errors=(
+        ['service_name']='サービス名は50文字以内で入力してください。'
+        ['user_name']='ユーザー名は50文字以内で入力してください。'
+        ['password']='パスワードは50文字以内で入力してください。'
+    )
+    MAX_CAHRACTERS=50
+    # user_inputsのインデントをindentとしてループし、ユーザー入力情報とエラー文を紐づける
+    for indent in "${!user_inputs[@]}"; do
+        if [ -z "${user_inputs[$indent]}" ]; then
+            error_messages+=("${input_errors[$indent]}")
+        elif [ "${#user_inputs[$indent]}" -ge "$MAX_CAHRACTERS" ]; then
+            error_messages+=("${length_errors[$indent]}")
+        fi
+    done
+}
+
 add_password()
 {
     local -A user_inputs=(['service_name']='' ['user_name']='' ['password']='')
@@ -62,6 +63,7 @@ add_password()
 
     read -p 'サービス名を入力して下さい：' user_inputs['service_name']
     read -p 'ユーザー名を入力して下さい：' user_inputs['user_name']
+    # -sオプションで入力内容を非表示化
     read -s -p 'パスワードを入力して下さい：' user_inputs['password']
     echo ''
 
@@ -82,7 +84,7 @@ get_password()
 {
     gpg -d --yes --output user_inputs user_inputs.gpg 2>> error.txt
 
-    # ユーザー入力の確認
+    # ユーザー入力を確認
     read -p 'サービス名を入力してください:' search_name
         if [ -z "$search_name" ]; then
             echo -e "\nサービス名が入力されていません。"
@@ -90,7 +92,7 @@ get_password()
             return
         fi
 
-    # ユーザー入力から、保存データの確認
+    # 入力されたサービス名のデータを確認
     matched_data=$(grep "^$search_name" user_inputs)
     if [ $? -eq 0 ]; then
         echo "$matched_data" | awk -F ':' '{print "サービス名:"$1 "\nユーザー名:"$2 "\nパスワード:"$3"\n"}'
@@ -106,13 +108,13 @@ while true; do
     read -p '次の選択肢から入力してください(Add Password/Get Password/Exit):' menu
     echo ''
     case $menu in
-    # TODO: 手動テスト簡略化の為、一時的にパターンを省略
-        'a')
+        'Add Password')
             add_password
             ;;
-        'g')
+        'Get Password')
             get_password
             ;;
+        # exitを遅延させて感謝メッセージの視認性を向上
         'Exit')
             echo -e "Thank you\033[31m!\033[0m"
             sleep 1.5
