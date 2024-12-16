@@ -82,24 +82,20 @@ add_password()
 
 get_password()
 {
-    gpg -d --yes --output user_inputs user_inputs.gpg 2>> error.txt
-
     # ユーザー入力を確認
     read -p 'サービス名を入力してください:' search_name
         if [ -z "$search_name" ]; then
             echo -e "\nサービス名が入力されていません。"
-            rm user_inputs
             return
         fi
 
     # 入力されたサービス名のデータを確認
-    matched_data=$(grep "^$search_name" user_inputs)
+    matched_data=$(gpg -d --yes user_inputs.gpg 2>> error.txt | grep "^$search_name" )
     if [ $? -eq 0 ]; then
         echo "$matched_data" | awk -F ':' '{print "サービス名:"$1 "\nユーザー名:"$2 "\nパスワード:"$3"\n"}'
     else
         echo -e 'そのサービスは登録されていません。\n'
     fi
-    rm user_inputs
 }
 
 echo 'パスワードマネージャーへようこそ！'
