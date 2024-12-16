@@ -4,20 +4,20 @@
 
 encrypt_remove_file()
 {
-        gpg --symmetric --yes --output user_inputs.gpg user_inputs 2>> error.txt
+        gpg --symmetric --yes --output user_inputs.gpg user_inputs.txt 2>> error.txt
         if [ $? -ne 0 ]; then
             echo 'ファイルの暗号化に失敗しました。'
-            rm user_inputs
+            rm user_inputs.txt
             return 1
         fi
-        rm user_inputs
+        rm user_inputs.txt
 }
 
 save_user_inputs()
 {
-        gpg -d --yes --output user_inputs user_inputs.gpg 2>> error.txt
+        gpg -d --yes --output user_inputs.txt user_inputs.gpg 2>> error.txt
     (
-        echo "${user_inputs['service_name']}":"${user_inputs['user_name']}":"${user_inputs['password']}" >> user_inputs
+        echo "${user_inputs['service_name']}":"${user_inputs['user_name']}":"${user_inputs['password']}" >> user_inputs.txt
     ) 2>> error.txt
 
     if [ $? -ne 0 ]; then
