@@ -33,8 +33,7 @@ encrypt_remove_file()
 
 save_user_inputs()
 {
-    # TODO:初回のみ、エラーが出るのでファイルを作成
-        gpg -d --yes --output user_inputs user_inputs.gpg
+        gpg -d --yes --output user_inputs user_inputs.gpg 2>> error.txt
     (
         echo "${user_inputs['service_name']}":"${user_inputs['user_name']}":"${user_inputs['password']}" >> user_inputs
     ) 2>> error.txt
