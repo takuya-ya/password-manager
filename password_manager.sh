@@ -26,8 +26,12 @@ validation_user_inputs()
 
 encrypt_remove_file()
 {
-        # TODO:ターミナルへの出力捨てる
-        gpg --symmetric --yes --output user_inputs.gpg user_inputs
+        gpg --symmetric --yes --output user_inputs.gpg user_inputs 2>> error.txt
+        if [ $? -ne 0 ]; then
+            echo 'ファイルの暗号化に失敗しました。'
+            rm user_inputs
+            return 1
+        fi
         rm user_inputs
 }
 
@@ -43,8 +47,12 @@ save_user_inputs()
         return
     fi
 
-    echo 'パスワードの追加は成功しました。'
     encrypt_remove_file
+    # ファイルの暗号化に失敗した場合、メニュー選択に戻る
+    if [ $? -ne 0 ]; then
+        return
+    fi
+    echo 'パスワードの追加は成功しました。'
 }
 
 add_password()
