@@ -96,11 +96,10 @@ get_password()
     matched_data=$(grep "^$search_name" user_inputs)
     if [ $? -eq 0 ]; then
         echo "$matched_data" | awk -F ':' '{print "サービス名:"$1 "\nユーザー名:"$2 "\nパスワード:"$3"\n"}'
-        encrypt_remove_file
     else
         echo -e 'そのサービスは登録されていません。\n'
-        rm user_inputs
     fi
+    rm user_inputs
 }
 
 echo 'パスワードマネージャーへようこそ！'
