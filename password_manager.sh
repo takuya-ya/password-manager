@@ -15,7 +15,19 @@ encrypt_remove_file()
 
 save_user_inputs()
 {
-    gpg -d --yes --output user_inputs.txt user_inputs.gpg 2>> error.txt
+    if [ -e user_inputs.gpg ]; then
+        gpg -d --yes --output user_inputs.txt user_inputs.gpg 2>> error.txt
+        if [ $? -ne 0 ]; then
+            if tail -n 1 error.txt | grep -E 'Bad session key|No secret key' > /dev/null; then
+                echo 'パスフレーズが間違っています。'
+                gpgconf --reload gpg-agent
+            else
+                echo 'ファイルの復号化に失敗しました。'
+            fi
+            return 1
+        fi
+    fi
+
     (
         echo "${user_inputs['service_name']}":"${user_inputs['user_name']}":"${user_inputs['password']}" >> user_inputs.txt
     ) 2>> error.txt
