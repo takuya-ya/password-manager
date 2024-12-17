@@ -4,13 +4,13 @@
 
 encrypt_remove_file()
 {
-        gpg --symmetric --yes --output user_inputs.gpg user_inputs.txt 2>> error.txt
-        if [ $? -ne 0 ]; then
-            echo 'ファイルの暗号化に失敗しました。'
-            rm user_inputs.txt
-            return 1
-        fi
+    gpg --symmetric --yes --output user_inputs.gpg user_inputs.txt 2>> error.txt
+    if [ $? -ne 0 ]; then
+        echo 'ファイルの暗号化に失敗しました。'
         rm user_inputs.txt
+        return 1
+    fi
+    rm user_inputs.txt
 }
 
 save_user_inputs()
