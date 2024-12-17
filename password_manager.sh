@@ -46,11 +46,12 @@ validation_user_inputs()
         ['password']='パスワードは50文字以内で入力してください。'
     )
     MAX_CAHRACTERS=50
+
     # user_inputsのインデントをindentとしてループし、ユーザー入力情報とエラー文を紐づける
     for indent in "${!user_inputs[@]}"; do
         if [ -z "${user_inputs[$indent]}" ]; then
             error_messages+=("${input_errors[$indent]}")
-        elif [ "${#user_inputs[$indent]}" -ge "$MAX_CAHRACTERS" ]; then
+        elif [ "${#user_inputs[$indent]}" -gt "$MAX_CAHRACTERS" ]; then
             error_messages+=("${length_errors[$indent]}")
         fi
     done
