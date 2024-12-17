@@ -15,15 +15,15 @@ encrypt_remove_file()
 
 save_user_inputs()
 {
-        gpg -d --yes --output user_inputs.txt user_inputs.gpg 2>> error.txt
+    gpg -d --yes --output user_inputs.txt user_inputs.gpg 2>> error.txt
     (
         echo "${user_inputs['service_name']}":"${user_inputs['user_name']}":"${user_inputs['password']}" >> user_inputs.txt
     ) 2>> error.txt
 
     if [ $? -ne 0 ]; then
-        echo   '入力内容の保存に失敗しました。'
+        echo '入力内容の保存に失敗しました。'
         rm user_inputs.txt
-        return
+        return 1
     fi
 }
 
@@ -63,10 +63,9 @@ add_password()
     echo ''
 
     validation_user_inputs
-# TODO:入力保存に失敗した場合の中断処理を修正
     if [ -z "$error_messages" ]; then
         # 入力が正常な場合、入力を保存
-        save_user_inputs
+        save_user_inputs || return
     else
         # 入力に異常がある場合、配列のエラー文を出力
         for error in "${error_messages[@]}"; do
