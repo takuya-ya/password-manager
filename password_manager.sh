@@ -17,11 +17,12 @@ save_user_inputs()
 {
         gpg -d --yes --output user_inputs.txt user_inputs.gpg 2>> error.txt
     (
-        echo "${user_inputs['service_name']}":"${user_inputs['user_name']}":"${user_inputs['password']}" >> user_inputs.txt
+        echo "${user_inputs['service_name']}":"${user_inputs['user_name']}":"${user_inputs['password']}" >> d/user_inputs.txt
     ) 2>> error.txt
 
     if [ $? -ne 0 ]; then
         echo   '入力内容の保存に失敗しました。'
+        rm user_inputs.txt
         return
     fi
 
