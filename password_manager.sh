@@ -17,7 +17,7 @@ save_user_inputs()
 {
         gpg -d --yes --output user_inputs.txt user_inputs.gpg 2>> error.txt
     (
-        echo "${user_inputs['service_name']}":"${user_inputs['user_name']}":"${user_inputs['password']}" >> d/user_inputs.txt
+        echo "${user_inputs['service_name']}":"${user_inputs['user_name']}":"${user_inputs['password']}" >> user_inputs.txt
     ) 2>> error.txt
 
     if [ $? -ne 0 ]; then
@@ -25,13 +25,6 @@ save_user_inputs()
         rm user_inputs.txt
         return
     fi
-
-    encrypt_remove_file
-    # ファイルの暗号化に失敗した場合、メニュー選択に戻る
-    if [ $? -ne 0 ]; then
-        return
-    fi
-    echo 'パスワードの追加は成功しました。'
 }
 
 validation_user_inputs()
@@ -70,7 +63,7 @@ add_password()
     echo ''
 
     validation_user_inputs
-
+# TODO:入力保存に失敗した場合の中断処理を修正
     if [ -z "$error_messages" ]; then
         # 入力が正常な場合、入力を保存
         save_user_inputs
@@ -79,7 +72,12 @@ add_password()
         for error in "${error_messages[@]}"; do
             echo  $error
         done
+        return
     fi
+
+    # ファイルを暗号化。失敗した場合、メニュー選択に戻る
+    encrypt_remove_file || return
+    echo 'パスワードの追加は成功しました。'
 }
 
 get_password()
