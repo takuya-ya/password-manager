@@ -101,12 +101,11 @@ get_password()
         fi
 
     # 入力されたサービス名のデータを確認
-    matched_data=$(gpg -d --yes user_inputs.gpg 2>> error.txt | grep "^$search_name" )
-    if [ $? -eq 0 ]; then
-        echo "$matched_data" | awk -F ':' '{print "サービス名:"$1 "\nユーザー名:"$2 "\nパスワード:"$3"\n"}'
-    else
-        echo -e 'そのサービスは登録されていません。\n'
-    fi
+    gpg -d --yes user_inputs.gpg 2>> error.txt |
+     grep "^$search_name" |
+     awk -F ':' '$1 !="" {print "サービス名:"$1 "\nユーザー名:"$2 "\nパスワード:"$3"\n"}'
+
+    # TODO:エラーハンドリングを追加
 }
 
 echo 'パスワードマネージャーへようこそ！'
