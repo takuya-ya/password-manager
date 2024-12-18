@@ -114,13 +114,12 @@ get_password()
             ['output_error']="${PIPESTATUS[2]}"
     )
 
-    # TODO:エラーハンドリングを追加
     if [ "${result['decrypt_error']}" -ne 0 ]; then
         if tail -n 1 error.txt | grep -E 'Bad session key|No secret key' > /dev/null; then
-            echo 'パスフレーズが間違っています。'
+            echo -e 'パスフレーズが間違っています。\n'
             gpgconf --reload gpg-agent
         else
-            echo 'ファイルの復号化に失敗しました。'
+            echo -e 'ファイルの復号化に失敗しました。\n'
         fi
     elif [ "${result['search_error']}" -ne 0 ]; then
         echo -e 'そのサービスは登録されていません。\n'
