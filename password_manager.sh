@@ -101,11 +101,21 @@ get_password()
         fi
 
     # 入力されたサービス名のデータを確認
+    declare -A result
+    # 複合化、サービス名の検索、仕様に則した出力
     gpg -d --yes user_inputs.gpg 2>> error.txt |
      grep "^$search_name" |
      awk -F ':' '$1 !="" {print "サービス名:"$1 "\nユーザー名:"$2 "\nパスワード:"$3"\n"}'
 
+    # 各コマンドの終了ステータスの取得
+    result=(
+            ['decrypt_error']="${PIPESTATUS[0]}"
+            ['search_error']="${PIPESTATUS[1]}"
+            ['output_error']="${PIPESTATUS[2]}"
+    )
+    echo "${result[@]}"
     # TODO:エラーハンドリングを追加
+
 }
 
 echo 'パスワードマネージャーへようこそ！'
