@@ -104,8 +104,8 @@ get_password()
     declare -A result
     # 複合化、サービス名の検索、仕様に則した出力
     gpg -d --yes user_inputs.gpg 2>> error.txt |
-     grep "^$search_name" |
-     awk -F ':' '$1 !="" {print "サービス名:"$1 "\nユーザー名:"$2 "\nパスワード:"$3"\n"}'
+     grep "^$search_name" 2>> error.txt |
+     awk -F ':' '$1 !="" {print "サービス名:"$1 "\nユーザー名:"$2 "\nパスワード:"$3"\n"}' 2>> error.txt
 
     # 各コマンドの終了ステータスの取得
     result=(
@@ -113,9 +113,18 @@ get_password()
             ['search_error']="${PIPESTATUS[1]}"
             ['output_error']="${PIPESTATUS[2]}"
     )
-    echo "${result[@]}"
-    # TODO:エラーハンドリングを追加
 
+    # TODO:エラーハンドリングを追加
+    if [ "${result['decrypt_error']}" -ne 0 ]; then
+        if tail -n 1 error.txt | grep -E 'Bad session key|No secret key' > /dev/null; then
+            echo 'パスフレーズが間違っています。'
+            gpgconf --reload gpg-agent
+        else
+            echo 'ファイルの復号化に失敗しました。'
+        fi
+    elif [ "${result['search_error']}" -ne 0 ]; then
+        echo -e 'そのサービスは登録されていません。\n'
+    fi
 }
 
 echo 'パスワードマネージャーへようこそ！'
