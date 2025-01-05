@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # ファイルを暗号化
-encrypt_remove_file()
+encrypt_file()
 {
     gpg --symmetric --yes --output user_inputs.gpg user_inputs.txt 2>> error.txt
     if [ $? -ne 0 ]; then
@@ -87,7 +87,7 @@ add_password()
     fi
 
     # ファイルを暗号化。失敗した場合、メニュー選択に戻る
-    encrypt_remove_file || return
+    encrypt_file || return
     echo 'パスワードの追加は成功しました。'
 }
 
