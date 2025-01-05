@@ -1,7 +1,5 @@
 #!/bin/bash
 
-# 未入力項目と文字数超過を確認し、該当するエラーメッセージを配列に追加
-
 encrypt_remove_file()
 {
     gpg --symmetric --yes --output user_inputs.gpg user_inputs.txt 2>> error.txt
