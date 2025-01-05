@@ -1,5 +1,6 @@
 #!/bin/bash
 
+# ファイルを暗号化
 encrypt_remove_file()
 {
     gpg --symmetric --yes --output user_inputs.gpg user_inputs.txt 2>> error.txt
@@ -63,6 +64,7 @@ validation_user_inputs()
 
 add_password()
 {
+    # 配列のスコープを関数内に限定し、アクセスを制限
     local -A user_inputs=(['service_name']='' ['user_name']='' ['password']='')
     local -a error_messages=()
 
@@ -99,13 +101,14 @@ get_password()
         fi
 
     # 入力されたサービス名のデータを確認
+    # TODO:localで宣言
     declare -A result
     # 複合化、サービス名の検索、仕様に則した出力
     gpg -d --yes user_inputs.gpg 2>> error.txt |
-     grep "^$search_name" 2>> error.txt |
-     awk -F ':' '$1 !="" {print "サービス名:"$1 "\nユーザー名:"$2 "\nパスワード:"$3"\n"}' 2>> error.txt
+        grep "^$search_name" 2>> error.txt |
+        awk -F ':' '$1 !="" {print "サービス名:"$1 "\nユーザー名:"$2 "\nパスワード:"$3"\n"}' 2>> error.txt
 
-    # 各コマンドの終了ステータスの取得
+    # 直前のパイプラインにおける各コマンドの終了ステータスを格納
     result=(
             ['decrypt_error']="${PIPESTATUS[0]}"
             ['search_error']="${PIPESTATUS[1]}"
@@ -121,6 +124,7 @@ get_password()
         fi
     elif [ "${result['search_error']}" -ne 0 ]; then
         echo -e 'そのサービスは登録されていません。\n'
+    # TODO:awkのエラーハンドリング
     fi
 }
 
