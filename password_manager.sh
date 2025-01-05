@@ -101,8 +101,7 @@ get_password()
         fi
 
     # 入力されたサービス名のデータを確認
-    # TODO:localで宣言
-    declare -A result
+    local -A result
     # 複合化、サービス名の検索、仕様に則した出力
     gpg -d --yes user_inputs.gpg 2>> error.txt |
         grep "^$search_name" 2>> error.txt |
