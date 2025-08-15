@@ -28,7 +28,7 @@ save_user_inputs()
     fi
 
     (
-        echo "${user_inputs['service_name']}":"${user_inputs['user_name']}":"${user_inputs['password']}" >> user_inputs.txt
+        echo "$service_name:$user_name:$password:$email" >> user_inputs.txt
     ) 2>> error.txt
 
     if [ $? -ne 0 ]; then
@@ -38,41 +38,62 @@ save_user_inputs()
     fi
 }
 
+# 個別フィールドのバリデーション関数
+validate_field()
+{
+    # 引数をローカル変数に代入
+    local field_value="$1"
+    local field_display_name="$2"
+    local max_chars="$3"
+
+    if [ -z "$field_value" ]; then
+        error_messages+=("${field_display_name}が入力されていません。")
+    elif [ "${#field_value}" -gt "$max_chars" ]; then
+        error_messages+=("${field_display_name}は${max_chars}文字以内で入力してください。")
+    fi
+}
+
+# メールアドレス専用のバリデーション関数
+validate_email_field()
+{
+    local email="$1"
+    local max_chars="$2"
+    
+    if [ -z "$email" ]; then
+        error_messages+=("メールアドレスが入力されていません。")
+    elif [ "${#email}" -gt "$max_chars" ]; then
+        error_messages+=("メールアドレスは${max_chars}文字以内で入力してください。")
+    elif [[ ! "$email" =~ ^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$ ]]; then
+        error_messages+=("正しいメールアドレス形式で入力してください。")
+    fi
+}
+
+# 全フィールドのバリデーション
 validation_user_inputs()
 {
-    local -A input_errors=(
-        ['service_name']='サービス名が入力されていません。'
-        ['user_name']='ユーザー名が入力されていません。'
-        ['password']='パスワードが入力されていません。'
-    )
-    local -A length_errors=(
-        ['service_name']='サービス名は50文字以内で入力してください。'
-        ['user_name']='ユーザー名は50文字以内で入力してください。'
-        ['password']='パスワードは50文字以内で入力してください。'
-    )
-    MAX_CHARACTERS=50
+    local MAX_CHARACTERS=50
 
-    # user_inputsのキーをkeyとしてループし、ユーザー入力情報とエラー文を紐づける
-    for key in "${!user_inputs[@]}"; do
-        if [ -z "${user_inputs[$key]}" ]; then
-            error_messages+=("${input_errors[$key]}")
-        elif [ "${#user_inputs[$key]}" -gt "$MAX_CHARACTERS" ]; then
-            error_messages+=("${length_errors[$key]}")
-        fi
-    done
+    validate_field "$service_name" "サービス名" "$MAX_CHARACTERS"
+    validate_field "$user_name" "ユーザー名" "$MAX_CHARACTERS"
+    validate_field "$password" "パスワード" "$MAX_CHARACTERS"
+    validate_email_field "$email" "100"  # メールアドレスは100文字まで
 }
 
 add_password()
 {
-    # 配列のスコープを関数内に限定し、アクセスを制限
-    local -A user_inputs=(['service_name']='' ['user_name']='' ['password']='')
-    local -a error_messages=()
+    # 通常の変数でユーザー入力を管理
+    local service_name=""
+    local user_name=""
+    local password=""
+    local email=""
+    local error_messages=()
 
-    read -p 'サービス名を入力して下さい：' user_inputs['service_name']
-    read -p 'ユーザー名を入力して下さい：' user_inputs['user_name']
+    read -p 'サービス名を入力して下さい：' service_name
+    read -p 'ユーザー名を入力して下さい：' user_name
     # -sオプションで入力内容を非表示化
-    read -s -p 'パスワードを入力して下さい：' user_inputs['password']
+    read -s -p 'パスワードを入力して下さい：' password
     echo ''
+    read -p 'メールアドレスを入力して下さい：' email
 
     validation_user_inputs
     if [ ${#error_messages[@]} -eq 0 ]; then
@@ -102,27 +123,25 @@ get_password()
     fi
 
     # 入力されたサービス名のデータを確認
-    local -A result
+    local decrypt_error search_error output_error
     # 複合化、サービス名の検索、仕様に則した出力
     gpg -d --yes user_inputs.gpg 2>> error.txt |
         grep "^$search_name" 2>> error.txt |
-        awk -F ':' '$1 !="" {print "サービス名:"$1 "\nユーザー名:"$2 "\nパスワード:"$3"\n"}' 2>> error.txt
+        awk -F ':' '$1 !="" {print "サービス名:"$1 "\nユーザー名:"$2 "\nパスワード:"$3 "\nメールアドレス:"$4"\n"}' 2>> error.txt
 
     # 直前のパイプラインにおける各コマンドの終了ステータスを格納
-    result=(
-            ['decrypt_error']="${PIPESTATUS[0]}"
-            ['search_error']="${PIPESTATUS[1]}"
-            ['output_error']="${PIPESTATUS[2]}"
-    )
+    decrypt_error="${PIPESTATUS[0]}"
+    search_error="${PIPESTATUS[1]}"
+    output_error="${PIPESTATUS[2]}"
 
-    if [ "${result['decrypt_error']}" -ne 0 ]; then
+    if [ "$decrypt_error" -ne 0 ]; then
         if tail -n 1 error.txt | grep -E 'Bad session key|No secret key' > /dev/null; then
             echo -e 'パスフレーズが間違っています。\n'
             gpgconf --reload gpg-agent
         else
             echo -e 'ファイルの復号化に失敗しました。\n'
         fi
-    elif [ "${result['search_error']}" -ne 0 ]; then
+    elif [ "$search_error" -ne 0 ]; then
         echo -e 'そのサービスは登録されていません。\n'
     # TODO:awkのエラーハンドリング
     fi
