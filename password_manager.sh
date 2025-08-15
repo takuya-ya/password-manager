@@ -28,7 +28,7 @@ save_user_inputs()
     fi
 
     (
-        echo "$service_name:$user_name:$password:$email" >> user_inputs.txt
+        echo "$service_name:$user_name:$password" >> user_inputs.txt
     ) 2>> error.txt
 
     if [ $? -ne 0 ]; then
@@ -53,21 +53,6 @@ validate_field()
     fi
 }
 
-# メールアドレス専用のバリデーション関数
-validate_email_field()
-{
-    local email="$1"
-    local max_chars="$2"
-    
-    if [ -z "$email" ]; then
-        error_messages+=("メールアドレスが入力されていません。")
-    elif [ "${#email}" -gt "$max_chars" ]; then
-        error_messages+=("メールアドレスは${max_chars}文字以内で入力してください。")
-    elif [[ ! "$email" =~ ^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$ ]]; then
-        error_messages+=("正しいメールアドレス形式で入力してください。")
-    fi
-}
-
 # 全フィールドのバリデーション
 validation_user_inputs()
 {
@@ -76,7 +61,6 @@ validation_user_inputs()
     validate_field "$service_name" "サービス名" "$MAX_CHARACTERS"
     validate_field "$user_name" "ユーザー名" "$MAX_CHARACTERS"
     validate_field "$password" "パスワード" "$MAX_CHARACTERS"
-    validate_email_field "$email" "100"  # メールアドレスは100文字まで
 }
 
 add_password()
@@ -85,7 +69,6 @@ add_password()
     local service_name=""
     local user_name=""
     local password=""
-    local email=""
     local error_messages=()
 
     read -p 'サービス名を入力して下さい：' service_name
@@ -93,7 +76,6 @@ add_password()
     # -sオプションで入力内容を非表示化
     read -s -p 'パスワードを入力して下さい：' password
     echo ''
-    read -p 'メールアドレスを入力して下さい：' email
 
     validation_user_inputs
     if [ ${#error_messages[@]} -eq 0 ]; then
@@ -127,7 +109,7 @@ get_password()
     # 複合化、サービス名の検索、仕様に則した出力
     gpg -d --yes user_inputs.gpg 2>> error.txt |
         grep "^$search_name" 2>> error.txt |
-        awk -F ':' '$1 !="" {print "サービス名:"$1 "\nユーザー名:"$2 "\nパスワード:"$3 "\nメールアドレス:"$4"\n"}' 2>> error.txt
+        awk -F ':' '$1 !="" {print "サービス名:"$1 "\nユーザー名:"$2 "\nパスワード:"$3"\n"}' 2>> error.txt
 
     # 直前のパイプラインにおける各コマンドの終了ステータスを格納
     decrypt_error="${PIPESTATUS[0]}"
