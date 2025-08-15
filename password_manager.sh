@@ -50,14 +50,14 @@ validation_user_inputs()
         ['user_name']='ユーザー名は50文字以内で入力してください。'
         ['password']='パスワードは50文字以内で入力してください。'
     )
-    MAX_CAHRACTERS=50
+    MAX_CHARACTERS=50
 
-    # user_inputsのインデントをindentとしてループし、ユーザー入力情報とエラー文を紐づける
-    for indent in "${!user_inputs[@]}"; do
-        if [ -z "${user_inputs[$indent]}" ]; then
-            error_messages+=("${input_errors[$indent]}")
-        elif [ "${#user_inputs[$indent]}" -gt "$MAX_CAHRACTERS" ]; then
-            error_messages+=("${length_errors[$indent]}")
+    # user_inputsのキーをkeyとしてループし、ユーザー入力情報とエラー文を紐づける
+    for key in "${!user_inputs[@]}"; do
+        if [ -z "${user_inputs[$key]}" ]; then
+            error_messages+=("${input_errors[$key]}")
+        elif [ "${#user_inputs[$key]}" -gt "$MAX_CHARACTERS" ]; then
+            error_messages+=("${length_errors[$key]}")
         fi
     done
 }
@@ -75,7 +75,7 @@ add_password()
     echo ''
 
     validation_user_inputs
-    if [ -z "$error_messages" ]; then
+    if [ ${#error_messages[@]} -eq 0 ]; then
         # 入力が正常な場合、入力を保存
         save_user_inputs || return
     else
@@ -94,11 +94,12 @@ add_password()
 get_password()
 {
     # ユーザー入力を確認
-    read -p 'サービス名を入力してください:' search_name
-        if [ -z "$search_name" ]; then
-            echo -e "\nサービス名が入力されていません。"
-            return
-        fi
+    # -p オプションは read コマンドでプロンプトを表示するために使います
+    read -p 'サービス名を入力してください：' search_name
+    if [ -z "$search_name" ]; then
+        echo -e "\nサービス名が入力されていません。"
+        return
+    fi
 
     # 入力されたサービス名のデータを確認
     local -A result
